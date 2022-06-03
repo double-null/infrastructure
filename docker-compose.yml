@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+
+  web:
+    image: nginx:latest
+    ports:
+      - "8080:80"
+    volumes:
+      - ./projects:/var/www
+      - ./infrastructure/nginx:/etc/nginx/conf.d
+      - ./data/logs:/var/log/nginx/
+    depends_on:
+      - php
+      - mysql
+    networks:
+      - app-network
+
+  php:
+    build:
+      context: ./infrastructure/php
+      dockerfile: Dockerfile
+    volumes:
+      - ./projects:/var/www
+    ports:
+      - "9000:9000"
+    networks:
+      - app-network
+
+  mysql:
+    image: mysql:8.0
+    ports:
+      - 6033:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
